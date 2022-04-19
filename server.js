@@ -1,54 +1,38 @@
-import  express  from "express";
-import  mongoose  from "mongoose";
-import  Cards from "./dbCards.js"
-import Cors from 'cors'
+const express = require("express");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const Cors = require("cors")
+const cardRoutes = require("./routes/cards");
+const authRoutes = require("./routes/Auth");
+
+
 
 //App config
 const app = express();
 const port = process.env.PORT || 8001
-const connection_url = `mongodb+srv://`user`: `password` @cluster0.y7afz.mongodb.net/tinder?retryWrites=true&w=majority`
 
+dotenv.config()
 //Middlewares
 app.use(express.json());
 app.use(Cors());
 
 
+
 //DB config
-mongoose.connect(connection_url, {
+mongoose.connect(process.env.MONGO_URI, {
    
     useNewUrlParser: true,
     useUnifiedTopology: true,
 
-    
-    
-  }).catch(err => console.log(err));
+}).then(()=> console.log("connected  to mongodb !!"))
 
-//API
-app.get('/',(req,res)=> {
-    res.status(200).send('hello world')
-}),
-app.post('/tinder/cards',(req,res) => {
-    const dbCard = req.body
+.catch(err => console.log(err.message));
 
-    Cards.create(dbCard, (err,data) => {
-        if (err) {
-            res.status(500).send(err)
-        }else {
-            res.status(201).send(data)
-        }
-    })
+app.use("/api/cards",cardRoutes);
+app.use("/api/auth",authRoutes);
 
-}),
-app.get('/tinder/cards', (req,res) => {
-    Cards.find((err, data) => {
-        if (err) {
-            res.status(500).send(err)
-            //console.log(err);
-        }else {
-            res.status(200).send(data)
-        }
-    })
-})
+
+
 //Listener
 app.listen(port, ()=> {
     console.log(`listening in : ${port}`)
